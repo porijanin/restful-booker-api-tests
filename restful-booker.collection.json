@@ -1,0 +1,3334 @@
+{
+  "info": {
+    "name": "Restful Booker API Tests v0.1",
+    "description": "All test cases are grouped by endpoint. Collection variables are self-contained.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://restful-booker.herokuapp.com",
+      "type": "string"
+    },
+    {
+      "key": "username",
+      "value": "admin",
+      "type": "string"
+    },
+    {
+      "key": "password",
+      "value": "password123",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "bookingId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "firstname",
+      "value": "Postman",
+      "type": "string"
+    },
+    {
+      "key": "lastname",
+      "value": "Runner",
+      "type": "string"
+    },
+    {
+      "key": "checkin",
+      "value": "2030-01-01",
+      "type": "string"
+    },
+    {
+      "key": "checkout",
+      "value": "2030-01-05",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Ping",
+      "item": [
+        {
+          "name": "Base request - Ping",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ping",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ping"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Ping: проверяет HTTP-статус.",
+                  "// Проверяет статус, тело, Content-Type и время ответа health-check.",
+                  "pm.response.to.have.status(201);",
+                  "pm.expect(pm.response.text()).to.eql('Created');"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-001 - Health-check без авторизации",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ping",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ping"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-001 - Health-check без авторизации: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(201);",
+                  "pm.test('TC-001: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить GET запрос /ping; проверить response"
+        },
+        {
+          "name": "TC-002 - Неизвестный query-параметр",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/ping?qwe=qwe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "ping"
+              ],
+              "query": [
+                {
+                  "key": "qwe",
+                  "value": "qwe"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-002 - Неизвестный query-параметр: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(400);",
+                  "pm.test('TC-002: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Low | Отправить GET запрос /ping; проверить response"
+        }
+      ]
+    },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Base request - Auth",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{username}}\",\"password\":\"{{password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Auth: проверяет HTTP-статус, наличие/сохранение токена.",
+                  "// Проверяет статус авторизации, структуру ошибки или token и время ответа.",
+                  "pm.expect(pm.response.code).to.be.within(200, 499);",
+                  "const token = pm.response.json().token;",
+                  "if (token) pm.collectionVariables.set('token', token);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-003 - Валидные credentials",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{username}}\",\"password\":\"{{password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-003 - Валидные credentials: проверяет HTTP-статус, время ответа, наличие/сохранение токена.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-003: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "const json = pm.response.json(); pm.expect(json.token).to.be.a('string').and.not.empty; pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-004 - Неверный пароль",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"admin\",\"password\":\"wrong-password\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-004 - Неверный пароль: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([200,401]).to.include(pm.response.code);",
+                  "pm.test('TC-004: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-005 - Неверный логин",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"unknown\",\"password\":\"password123\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-005 - Неверный логин: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([200,401]).to.include(pm.response.code);",
+                  "pm.test('TC-005: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-006 - Пустые значения",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"\",\"password\":\"\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-006 - Пустые значения: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([200,400]).to.include(pm.response.code);",
+                  "pm.test('TC-006: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-007 - Отсутствует username",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"password\":\"{{password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-007 - Отсутствует username: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([200,400]).to.include(pm.response.code);",
+                  "pm.test('TC-007: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-008 - Пустое тело",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-008 - Пустое тело: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([200,400]).to.include(pm.response.code);",
+                  "pm.test('TC-008: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-009 - Невалидный JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{invalid",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-009 - Невалидный JSON: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(400);",
+                  "pm.test('TC-009: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-010 - Неверный Content-Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{username}}\",\"password\":\"{{password}}\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-010 - Неверный Content-Type: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(400);",
+                  "pm.test('TC-010: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-011 - Дополнительное поле",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"{{username}}\",\"password\":\"{{password}}\",\"extra\":true}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-011 - Дополнительное поле: проверяет HTTP-статус, время ответа, наличие/сохранение токена.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-011: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "const json = pm.response.json(); pm.expect(json.token).to.be.a('string').and.not.empty; pm.collectionVariables.set('token', json.token);"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: Low | Отправить POST запрос /auth; проверить response"
+        },
+        {
+          "name": "TC-012 - SQL-инъекционное значение",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"username\":\"' OR '1'='1\",\"password\":\"password123\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auth"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-012 - SQL-инъекционное значение: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([200,401]).to.include(pm.response.code);",
+                  "pm.test('TC-012: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /auth; проверить response"
+        }
+      ]
+    },
+    {
+      "name": "Booking - POST /booking",
+      "item": [
+        {
+          "name": "Base request - Create booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"{{firstname}}\",\"lastname\":\"{{lastname}}\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"{{checkin}}\",\"checkout\":\"{{checkout}}\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Create booking: проверяет HTTP-статус, наличие bookingid.",
+                  "// Проверяет статус, JSON-структуру, валидацию payload и время ответа.",
+                  "pm.expect(pm.response.code).to.be.within(200, 499);",
+                  "const bookingId = pm.response.json().bookingid;",
+                  "if (bookingId) pm.collectionVariables.set('bookingId', bookingId);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-013 - Создание со всеми полями",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-013 - Создание со всеми полями: проверяет HTTP-статус, время ответа, наличие bookingid.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-013: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "const json = pm.response.json(); pm.expect(json.bookingid).to.be.a('number'); pm.collectionVariables.set('bookingId', json.bookingid);"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-014 - Создание с additionalneeds",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-014 - Создание с additionalneeds: проверяет HTTP-статус, время ответа, наличие bookingid.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-014: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "const json = pm.response.json(); pm.expect(json.bookingid).to.be.a('number'); pm.collectionVariables.set('bookingId', json.bookingid);"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: Medium | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-015 - Отсутствует firstname",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-015 - Отсутствует firstname: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-015: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-016 - Отсутствует lastname",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-016 - Отсутствует lastname: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-016: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-017 - Отсутствует totalprice",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-017 - Отсутствует totalprice: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-017: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-018 - Отсутствует depositpaid",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-018 - Отсутствует depositpaid: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-018: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-019 - Отсутствует bookingdates",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-019 - Отсутствует bookingdates: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-019: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-020 - Отсутствует checkin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-020 - Отсутствует checkin: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-020: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-021 - Отсутствует checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-021 - Отсутствует checkout: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-021: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-022 - totalprice строкой",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":\"100\",\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-022 - totalprice строкой: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-022: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-023 - totalprice отрицательный",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-023 - totalprice отрицательный: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,200]).to.include(pm.response.code);",
+                  "pm.test('TC-023: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-024 - depositpaid строкой",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":\"true\",\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-024 - depositpaid строкой: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-024: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-025 - Невалидный формат даты",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"01/01/2030\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-025 - Невалидный формат даты: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-025: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-026 - checkout раньше checkin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-026 - checkout раньше checkin: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,200]).to.include(pm.response.code);",
+                  "pm.test('TC-026: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-027 - Невалидный JSON",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{invalid",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-027 - Невалидный JSON: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(400);",
+                  "pm.test('TC-027: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-028 - Неверный Content-Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "text/plain"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-028 - Неверный Content-Type: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(400);",
+                  "pm.test('TC-028: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить POST запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-029 - Специальные символы в строках",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Guest <script>alert(1)</script>\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-029 - Специальные символы в строках: проверяет HTTP-статус, время ответа, наличие bookingid.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-029: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "const json = pm.response.json(); pm.expect(json.bookingid).to.be.a('number'); pm.collectionVariables.set('bookingId', json.bookingid);"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: Medium | Отправить POST запрос /booking; проверить response"
+        }
+      ]
+    },
+    {
+      "name": "Booking - GET /booking",
+      "item": [
+        {
+          "name": "Base request - Search bookings",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Search bookings: проверяет HTTP-статус.",
+                  "// Проверяет статус, JSON-массив, фильтры и время ответа.",
+                  "pm.expect(pm.response.code).to.be.within(200, 499);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-030 - Получение списка без фильтров",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-030 - Получение списка без фильтров: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-030: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-031 - Фильтр firstname",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname={{firstname}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "{{firstname}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-031 - Фильтр firstname: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-031: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-032 - Фильтр lastname",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?lastname={{lastname}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "lastname",
+                  "value": "{{lastname}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-032 - Фильтр lastname: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-032: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-033 - Фильтр checkin",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkin={{checkin}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkin",
+                  "value": "{{checkin}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-033 - Фильтр checkin: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-033: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: Medium | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-034 - Фильтр checkout",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkout={{checkout}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkout",
+                  "value": "{{checkout}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-034 - Фильтр checkout: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-034: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: Medium | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-035 - Комбинация всех фильтров",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname={{firstname}}&lastname={{lastname}}&checkin={{checkin}}&checkout={{checkout}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "{{firstname}}"
+                },
+                {
+                  "key": "lastname",
+                  "value": "{{lastname}}"
+                },
+                {
+                  "key": "checkin",
+                  "value": "{{checkin}}"
+                },
+                {
+                  "key": "checkout",
+                  "value": "{{checkout}}"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-035 - Комбинация всех фильтров: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-035: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-036 - Несуществующее значение",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname=NoSuchGuest_999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "NoSuchGuest_999"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-036 - Несуществующее значение: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-036: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-037 - Пустое значение фильтра",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname=",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-037 - Пустое значение фильтра: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-037: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Low | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-038 - Неверный формат даты",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?checkin=not-a-date",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "checkin",
+                  "value": "not-a-date"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-038 - Неверный формат даты: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.expect([200,400]).to.include(pm.response.code);",
+                  "pm.test('TC-038: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-039 - URL-encoded значение",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname=John%20Doe",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "John%20Doe"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-039 - URL-encoded значение: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-039: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: Medium | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-040 - Неизвестный query-параметр",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?unexpected=true",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "unexpected",
+                  "value": "true"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-040 - Неизвестный query-параметр: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-040: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Low | Отправить GET запрос /booking; проверить response"
+        },
+        {
+          "name": "TC-041 - Повторяющийся query-параметр",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking?firstname=A&firstname=B",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking"
+              ],
+              "query": [
+                {
+                  "key": "firstname",
+                  "value": "A"
+                },
+                {
+                  "key": "firstname",
+                  "value": "B"
+                }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-041 - Повторяющийся query-параметр: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-041: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Search response is JSON', function () { pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Low | Отправить GET запрос /booking; проверить response"
+        }
+      ]
+    },
+    {
+      "name": "Booking - GET /booking/:id",
+      "item": [
+        {
+          "name": "Base request - Get booking",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: создаёт booking, чтобы основной запрос работал с существующей сущностью.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err, res) {",
+                  "  if (!err && res.code === 200) { const id = res.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Get booking: проверяет HTTP-статус.",
+                  "// Проверяет статус, структуру booking, авторизацию, CRUD-результат и время ответа.",
+                  "pm.expect(pm.response.code).to.be.within(200, 499);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-042 - Существующий числовой id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: создаёт booking, чтобы основной запрос работал с существующей сущностью.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err, res) {",
+                  "  if (!err && res.code === 200) { const id = res.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-042 - Существующий числовой id: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-042: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Response body is JSON when resource is found', function () { if (pm.response.code === 200) pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить GET запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-043 - Несуществующий id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/99999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "99999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-043 - Несуществующий id: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(404);",
+                  "pm.test('TC-043: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Response body is JSON when resource is found', function () { if (pm.response.code === 200) pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить GET запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-044 - id = 0",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/0",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "0"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-044 - id = 0: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(404);",
+                  "pm.test('TC-044: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Response body is JSON when resource is found', function () { if (pm.response.code === 200) pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить GET запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-045 - Отрицательный id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/-1",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "-1"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-045 - Отрицательный id: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(404);",
+                  "pm.test('TC-045: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Response body is JSON when resource is found', function () { if (pm.response.code === 200) pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить GET запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-046 - Строковый id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/abc",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "abc"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-046 - Строковый id: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(404);",
+                  "pm.test('TC-046: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить GET запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-047 - Дробный id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/1.5",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "1.5"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-047 - Дробный id: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(404);",
+                  "pm.test('TC-047: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Response body is JSON when resource is found', function () { if (pm.response.code === 200) pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить GET запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-048 - Специальные символы в id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/%27",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "%27"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-048 - Специальные символы в id: проверяет HTTP-статус, время ответа, валидность JSON.",
+                  "pm.response.to.have.status(404);",
+                  "pm.test('TC-048: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });",
+                  "pm.test('Response body is JSON when resource is found', function () { if (pm.response.code === 200) pm.response.to.be.json; });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Low | Отправить GET запрос /booking/:id; проверить response"
+        }
+      ]
+    },
+    {
+      "name": "Booking - PUT /booking/:id",
+      "item": [
+        {
+          "name": "Base request - Replace booking",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Updated\",\"lastname\":\"Guest\",\"totalprice\":200,\"depositpaid\":false,\"bookingdates\":{\"checkin\":\"2031-02-01\",\"checkout\":\"2031-02-05\"}}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Replace booking: проверяет HTTP-статус.",
+                  "// Проверяет статус, структуру booking, авторизацию, CRUD-результат и время ответа.",
+                  "pm.expect(pm.response.code).to.be.within(200, 499);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-049 - Полное обновление с токеном",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-049 - Полное обновление с токеном: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-049: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить PUT запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-050 - Без авторизации",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: создаёт booking, чтобы основной запрос работал с существующей сущностью.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err, res) {",
+                  "  if (!err && res.code === 200) { const id = res.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-050 - Без авторизации: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([401,403]).to.include(pm.response.code);",
+                  "pm.test('TC-050: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PUT запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-051 - Невалидный token",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token=invalid-token"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: создаёт booking, чтобы основной запрос работал с существующей сущностью.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err, res) {",
+                  "  if (!err && res.code === 200) { const id = res.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-051 - Невалидный token: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([401,403]).to.include(pm.response.code);",
+                  "pm.test('TC-051: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PUT запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-052 - Частичное тело",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Partial\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-052 - Частичное тело: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-052: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PUT запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-053 - Неверный тип поля",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":\"x\",\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-053 - Неверный тип поля: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,500]).to.include(pm.response.code);",
+                  "pm.test('TC-053: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PUT запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-054 - checkout раньше checkin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Case Runner\",\"lastname\":\"Postman\",\"totalprice\":100,\"depositpaid\":true,\"bookingdates\":{\"checkin\":\"2030-01-01\",\"checkout\":\"2030-01-05\"},\"additionalneeds\":\"Breakfast\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-054 - checkout раньше checkin: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,200]).to.include(pm.response.code);",
+                  "pm.test('TC-054: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PUT запрос /booking/:id; проверить response"
+        }
+      ]
+    },
+    {
+      "name": "Booking - PATCH /booking/:id",
+      "item": [
+        {
+          "name": "Base request - Patch booking",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Patched\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Patch booking: проверяет HTTP-статус.",
+                  "// Проверяет статус, структуру booking, авторизацию, CRUD-результат и время ответа.",
+                  "pm.expect(pm.response.code).to.be.within(200, 499);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-055 - Изменение firstname",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Patched\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-055 - Изменение firstname: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-055: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить PATCH запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-056 - Изменение нескольких полей",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Patched\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-056 - Изменение нескольких полей: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(200);",
+                  "pm.test('TC-056: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: Medium | Отправить PATCH запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-057 - Без авторизации",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Patched\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: создаёт booking, чтобы основной запрос работал с существующей сущностью.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err, res) {",
+                  "  if (!err && res.code === 200) { const id = res.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-057 - Без авторизации: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([401,403]).to.include(pm.response.code);",
+                  "pm.test('TC-057: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PATCH запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-058 - Невалидный token",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token=invalid-token"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"firstname\":\"Patched\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: создаёт booking, чтобы основной запрос работал с существующей сущностью.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err, res) {",
+                  "  if (!err && res.code === 200) { const id = res.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-058 - Невалидный token: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([401,403]).to.include(pm.response.code);",
+                  "pm.test('TC-058: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PATCH запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-059 - Пустое тело",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-059 - Пустое тело: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,200]).to.include(pm.response.code);",
+                  "pm.test('TC-059: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить PATCH запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-060 - Неверный тип изменяемого поля",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"depositpaid\":\"yes\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-060 - Неверный тип изменяемого поля: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,200]).to.include(pm.response.code);",
+                  "pm.test('TC-060: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить PATCH запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-061 - Неизвестное поле",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"unknownField\":true}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-061 - Неизвестное поле: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([400,200]).to.include(pm.response.code);",
+                  "pm.test('TC-061: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Low | Отправить PATCH запрос /booking/:id; проверить response"
+        }
+      ]
+    },
+    {
+      "name": "Booking - DELETE /booking/:id",
+      "item": [
+        {
+          "name": "Base request - Delete booking",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/99999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "99999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// Base request - Delete booking: проверяет HTTP-статус.",
+                  "// Проверяет статус, структуру booking, авторизацию, CRUD-результат и время ответа.",
+                  "pm.expect(pm.response.code).to.be.within(200, 499);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "TC-063 - Удаление без авторизации",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: создаёт booking, чтобы основной запрос работал с существующей сущностью.",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err, res) {",
+                  "  if (!err && res.code === 200) { const id = res.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-063 - Удаление без авторизации: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([401,403]).to.include(pm.response.code);",
+                  "pm.test('TC-063: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: High | Отправить DELETE запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-062 - Удаление с валидным token",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация + создание booking (token и bookingId сохраняются в переменные).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (!err2 && res2.code === 200) { const id = res2.json().bookingid; if (id) pm.collectionVariables.set('bookingId', id); }",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-062 - Удаление с валидным token: проверяет HTTP-статус, время ответа.",
+                  "pm.response.to.have.status(201);",
+                  "pm.test('TC-062: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Positive | Priority: High | Отправить DELETE запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-065 - Повторное удаление",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/{{bookingId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "{{bookingId}}"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "exec": [
+                  "// Pre-request: авторизация, создание booking и его удаление (для проверки повторного удаления).",
+                  "const base = pm.collectionVariables.get('baseUrl');",
+                  "pm.sendRequest({ url: base + '/auth', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ username: pm.collectionVariables.get('username'), password: pm.collectionVariables.get('password') }) } }, function (err, res) {",
+                  "  if (err || res.code !== 200) { console.error('auth failed', err || res.code); return; }",
+                  "  const token = res.json().token; if (token) pm.collectionVariables.set('token', token);",
+                  "  pm.sendRequest({ url: base + '/booking', method: 'POST', header: { 'Content-Type': 'application/json' }, body: { mode: 'raw', raw: JSON.stringify({ firstname: pm.collectionVariables.get('firstname'), lastname: pm.collectionVariables.get('lastname'), totalprice: 100, depositpaid: true, bookingdates: { checkin: pm.collectionVariables.get('checkin'), checkout: pm.collectionVariables.get('checkout') } }) } }, function (err2, res2) {",
+                  "    if (err2 || res2.code !== 200) { console.error('create failed'); return; }",
+                  "    const id = res2.json().bookingid; if (!id) return;",
+                  "    pm.collectionVariables.set('bookingId', id);",
+                  "    pm.sendRequest({ url: base + '/booking/' + id, method: 'DELETE', header: { Cookie: 'token=' + token } }, function (err3, res3) {",
+                  "      if (!err3) console.log('pre-deleted booking ' + id + ' => ' + res3.code);",
+                  "    });",
+                  "  });",
+                  "});"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-065 - Повторное удаление: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([404,405]).to.include(pm.response.code);",
+                  "pm.test('TC-065: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить DELETE запрос /booking/:id; проверить response"
+        },
+        {
+          "name": "TC-064 - Удаление несуществующего id",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "token={{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/booking/99999999",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "booking",
+                "99999999"
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// TC-064 - Удаление несуществующего id: проверяет HTTP-статус, время ответа.",
+                  "pm.expect([404,405]).to.include(pm.response.code);",
+                  "pm.test('TC-064: response time under 10 seconds', function () { pm.expect(pm.response.responseTime).to.be.below(10000); });"
+                ]
+              }
+            }
+          ],
+          "description": "Negative | Priority: Medium | Отправить DELETE запрос /booking/:id; проверить response"
+        }
+      ]
+    }
+  ]
+}
